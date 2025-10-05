@@ -7,7 +7,7 @@ const CONFIG = {
             name: 'Cerebras',
             endpoint: 'https://api.cerebras.ai/v1/chat/completions',
             headers: {
-                'Authorization': 'Bearer csk-26m8r6dcen4xtxvehc9tydr3t625cehvmye9fndvpddpw3vf',
+                'Authorization': 'Bearer ',
                 'Content-Type': 'application/json'
             },
             model: 'llama3.1-70b',
@@ -26,7 +26,7 @@ const CONFIG = {
             name: 'OpenRouter Visual',
             endpoint: 'https://openrouter.ai/api/v1/chat/completions',
             headers: {
-                'Authorization': 'Bearer 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',
+                'Authorization': 'Bearer ',
                 'Content-Type': 'application/json',
                 'HTTP-Referer': 'https://acta.so',
                 'X-Title': 'ACTA Founder Analyzer'
