@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cereb-Meta Analyzer - AI Research Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header with Enhanced API Status -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h1 class="app-title">Cereb-Meta Analyzer</h1>
+            </div>
+            <!-- Enhanced API Status Indicator -->
+            <div class="api-status" id="apiStatus" onclick="retryConnection()" title="Click to refresh API connections">
+                <div class="status-indicator" id="statusIndicator">
+                    <i class="fas fa-circle"></i>
+                </div>
+                <span class="status-text" id="statusText">Checking connections...</span>
+                
+                <!-- Hidden API Details Popup -->
+                <div class="api-connection-details" id="apiConnectionDetails">
+                    <div class="api-detail-item">
+                        <span class="api-name">Cerebras (Primary)</span>
+                        <span class="api-status-badge offline" id="cerebrasStatus">Offline</span>
+                    </div>
+                    <div class="api-detail-item">
+                        <span class="api-name">OpenRouter Text</span>
+                        <span class="api-status-badge offline" id="fallbackStatus">Offline</span>
+                    </div>
+                    <div class="api-detail-item">
+                        <span class="api-name">OpenRouter Visual</span>
+                        <span class="api-status-badge offline" id="visualStatus">Offline</span>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e9ecef;">
+                        <button class="retry-connection-btn" onclick="performComprehensiveApiTest()">
+                            <i class="fas fa-sync-alt"></i>
+                            Retry All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-outline export-btn" onclick="exportAnalysis()">
+                <i class="fas fa-download"></i>
+                Export Analysis
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-folder-open"></i> Saved Analyses</h3>
+                <button class="btn btn-sm new-analysis-btn" onclick="startNewAnalysis()">
+                    <i class="fas fa-plus"></i>
+                    New Analysis
+                </button>
+            </div>
+            <div class="analyses-list" id="analysesList">
+                <div class="analysis-item sample" onclick="loadSampleAnalysis('agentic-ai-agency')">
+                    <div class="analysis-preview">
+                        <h4>Agentic AI Agency</h4>
+                        <div class="analysis-meta">
+                            <span class="date">Oct 03, 2025</span>
+                            <span class="score score-high">8.7/10</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="analysis-item sample" onclick="loadSampleAnalysis('ai-healthcare')">
+                    <div class="analysis-preview">
+                        <h4>AI-Powered Healthcare Platform</h4>
+                        <div class="analysis-meta">
+                            <span class="date">Oct 01, 2024</span>
+                            <span class="score score-high">8.5/10</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="analysis-item sample" onclick="loadSampleAnalysis('sustainable-fashion')">
+                    <div class="analysis-preview">
+                        <h4>Sustainable Fashion Marketplace</h4>
+                        <div class="analysis-meta">
+                            <span class="date">Sep 28, 2024</span>
+                            <span class="score score-medium">7.2/10</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Chat Area -->
+        <main class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="welcome-content">
+                        <h2>Welcome to Cereb-Meta Analyzer</h2>
+                        <p>Your AI-powered research assistant with bulletproof API connections for startup validation and investor matching.</p>
+                        <div class="welcome-features">
+                            <div class="feature-item">
+                                <i class="fas fa-search"></i>
+                                <span>Comprehensive idea validation</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-users"></i>
+                                <span>VC & investor matching</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>Professional outreach templates</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Visual market analysis</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Bulletproof API connections</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Auto-retry & fallback systems</span>
+                            </div>
+                        </div>
+                        <p class="welcome-cta">Describe your startup idea, domain, or field to get started!</p>
+                        <div style="margin-top: 24px;">
+                            <div class="status-pill success" id="connectionStatusPill" style="display: none;">
+                                <i class="fas fa-check"></i>
+                                <span>All systems operational</span>
+                            </div>
+                            <div class="status-pill warning" id="fallbackStatusPill" style="display: none;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Running on backup systems</span>
+                            </div>
+                            <div class="status-pill error" id="offlineStatusPill" style="display: none;">
+                                <i class="fas fa-times"></i>
+                                <span>Offline mode - sample data available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Describe your startup idea, domain, or field for comprehensive analysis with bulletproof API connections..."
+                        rows="3"
+                    ></textarea>
+                    <button class="btn btn-primary send-btn" onclick="sendMessage()" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                        Analyze Idea
+                    </button>
+                </div>
+                <!-- Enhanced Connection Status -->
+                <div class="connection-status" id="connectionStatus" style="display: none;">
+                    <div class="status-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>API connection issues detected. Using comprehensive fallback systems with sample analyses.</span>
+                        <button class="retry-connection-btn" onclick="performComprehensiveApiTest()">
+                            <i class="fas fa-sync-alt"></i>
+                            Retry Connection
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Enhanced Loading Modal -->
+    <div class="modal hidden" id="loadingModal">
+        <div class="modal-content">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <h3 id="loadingTitle">Analyzing Your Startup Idea</h3>
+                <p id="loadingMessage">Testing API connections and researching market data...</p>
+                <div class="loading-progress" id="loadingProgress">
+                    <div class="progress-step active" id="step1">
+                        <i class="fas fa-search"></i>
+                        <span>Analyzing idea</span>
+                    </div>
+                    <div class="progress-step" id="step2">
+                        <i class="fas fa-database"></i>
+                        <span>Researching market</span>
+                    </div>
+                    <div class="progress-step" id="step3">
+                        <i class="fas fa-users"></i>
+                        <span>Finding investors</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; font-size: 12px; color: #6c757d;">
+                    <div id="currentApiStatus">Testing primary API connection...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Error Modal -->
+    <div class="modal hidden" id="errorModal">
+        <div class="modal-content error-modal">
+            <div class="error-content">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3 id="errorTitle">Connection Error</h3>
+                <p id="errorMessage">We're having trouble connecting to our AI service. Our bulletproof system will try alternative connections.</p>
+                <div style="margin: 16px 0; padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 14px;">
+                    <strong>API Status:</strong>
+                    <div id="errorApiStatus" style="margin-top: 8px; font-family: monospace; font-size: 12px;">
+                        • Cerebras: <span id="errorCerebrasStatus">Testing...</span><br>
+                        • OpenRouter Text: <span id="errorFallbackStatus">Testing...</span><br>
+                        • OpenRouter Visual: <span id="errorVisualStatus">Testing...</span>
+                    </div>
+                </div>
+                <div class="error-actions">
+                    <button class="btn btn-primary" onclick="retryAnalysis()">
+                        <i class="fas fa-redo"></i>
+                        Try Again
+                    </button>
+                    <button class="btn btn-outline" onclick="useOfflineMode()">
+                        <i class="fas fa-eye"></i>
+                        View Sample Analysis
+                    </button>
+                    <button class="btn btn-outline" onclick="performComprehensiveApiTest(); closeErrorModal();">
+                        <i class="fas fa-sync-alt"></i>
+                        Test All APIs
+                    </button>
+                    <button class="btn btn-outline" onclick="closeErrorModal()">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
+                <div class="troubleshooting">
+                    <details>
+                        <summary>🔧 Troubleshooting & System Info</summary>
+                        <div style="text-align: left; margin-top: 12px;">
+                            <h5>Connection Troubleshooting:</h5>
+                            <ul>
+                                <li>Check your internet connection</li>
+                                <li>Disable VPN or proxy if active</li>
+                                <li>Try refreshing the page</li>
+                                <li>Clear browser cache and cookies</li>
+                                <li>Contact support if issues persist</li>
+                            </ul>
+                            <h5 style="margin-top: 16px;">Our Bulletproof System:</h5>
+                            <ul>
+                                <li><strong>Primary API:</strong> Cerebras (llama3.1-70b)</li>
+                                <li><strong>Fallback API:</strong> OpenRouter Text (llama-3.1-70b-instruct)</li>
+                                <li><strong>Visual API:</strong> OpenRouter Visual (llama-4-scout)</li>
+                                <li><strong>Offline Fallback:</strong> Comprehensive sample data</li>
+                                <li><strong>Retry Logic:</strong> 3 attempts with exponential backoff</li>
+                                <li><strong>Timeout Management:</strong> 30-second timeouts</li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copy Success Notification -->
+    <div class="notification hidden" id="copyNotification">
+        <i class="fas fa-check"></i>
+        <span>Email template copied to clipboard!</span>
+    </div>
+
+    <!-- Enhanced Status Notifications -->
+    <div class="notification hidden" id="statusNotification">
+        <i class="fas fa-info-circle"></i>
+        <span id="statusNotificationText"></span>
+    </div>
+
+    <!-- API Testing Notification -->
+    <div class="notification hidden" id="apiTestNotification">
+        <i class="fas fa-sync-alt"></i>
+        <span id="apiTestNotificationText">Testing API connections...</span>
+    </div>
+
+    <!-- Connection Success Notification -->
+    <div class="notification hidden" id="connectionSuccessNotification">
+        <i class="fas fa-wifi"></i>
+        <span id="connectionSuccessText">API connection restored!</span>
+    </div>
+
+    <!-- Hidden Elements for Dynamic Content -->
+    <div style="display: none;">
+        <!-- Sample Analysis Data -->
+        <div id="sampleAnalysisData">
+            <div id="agentic-ai-agency-data">
+                <div class="query">I want to start an Agentic AI agency</div>
+                <div class="analysis">
+                    **1. IDEA VALIDATION SCORE**: 8.7/10
+
+                    The Agentic AI agency concept shows strong potential due to the rapidly growing AI automation market ($15.7B in 2024, projected to reach $45.2B by 2030 at 23.4% CAGR).
+
+                    **2. MARKET ANALYSIS**:
+
+                    **Total Addressable Market (TAM)**:
+                    - Global AI services market: $150+ billion by 2030
+                    - AI automation specifically: $45.2 billion by 2030
+                    - Enterprise AI adoption: 85% of businesses planning AI integration by 2025
+
+                    **Market Consensus & Industry Trends**:
+                    - Strong positive sentiment toward AI automation
+                    - Increasing demand for AI-powered business processes
+                    - Shift from simple chatbots to sophisticated agentic systems
+
+                    **Competitive Landscape Analysis**:
+                    - Major players: OpenAI, Anthropic, Google AI, Microsoft
+                    - Specialized agencies emerging rapidly
+                    - High fragmentation in service delivery
+
+                    **Market Entry Barriers**:
+                    - Technical expertise requirements
+                    - High initial talent acquisition costs
+                    - Need for proven case studies
+
+                    **Target Audience Demographics**:
+                    - Mid-market companies ($10M-$500M revenue)
+                    - Technology-forward industries
+                    - Companies with repetitive processes
+
+                    **3. STRENGTHS & OPPORTUNITIES**:
+
+                    • Growing Market Demand: Exponential increase in AI adoption
+                    • High-Value Services: Premium pricing for specialized AI implementation
+                    • Recurring Revenue Model: Ongoing optimization contracts
+                    • Scalable Solutions: AI systems can be replicated across clients
+                    • First-Mover Advantage: Early entry in rapidly evolving market
+
+                    **4. POTENTIAL FLAWS/RISKS**:
+
+                    • Rapid technology obsolescence
+                    • Dependence on third-party AI platforms
+                    • High competition from tech giants
+                    • Difficulty finding qualified AI talent
+                    • Long sales cycles for enterprise clients
+
+                    **5. FUTURE RISKS**:
+
+                    • No-code AI platforms reducing need for agencies
+                    • Increasing AI regulation and compliance requirements
+                    • Market saturation as more players enter
+                    • Commoditization of basic AI services
+
+                    **6. PRESENT HURDLES**:
+
+                    • Established consulting firms with AI divisions
+                    • High upfront investment in AI infrastructure
+                    • Need for specialized technical talent
+                    • Case study development requirements
+
+                    **7. RELEVANT VCs/INVESTORS**:
+
+                    | VC/Investor | Focus Area | Contact | Recent AI Investments |
+                    |-------------|------------|---------|----------------------|
+                    | **Andreessen Horowitz** | Enterprise AI | [LinkedIn](https://linkedin.com/company/andreessen-horowitz) | OpenAI, Databricks |
+                    | **Sequoia Capital** | AI Infrastructure | [LinkedIn](https://linkedin.com/company/sequoia-capital) | OpenAI, Character.AI |
+                    | **Index Ventures** | AI/ML Startups | [LinkedIn](https://linkedin.com/company/index-ventures) | Cohere, Scale AI |
+
+                    **8. HOW Cereb-Meta CAN HELP**:
+
+                    • Strategic Planning: Market positioning and differentiation strategy
+                    • Business Development: Customer discovery and validation
+                    • Operational Support: Team building and talent acquisition
+                    • Growth Acceleration: Scaling strategies and operational efficiency
+                    • Funding Support: Investor readiness and pitch deck development
+
+                    **9. EMAIL TEMPLATES**:
+
+                    **Template 1: Initial VC Outreach**
+
+                    Subject: Seeking Investment for Agentic AI Agency - $45B Market Opportunity
+
+                    Dear [Investor Name],
+
+                    I hope this message finds you well. I'm [Your Name], founder of [Company Name], and I'm reaching out because of your impressive track record investing in AI infrastructure companies.
+
+                    We're building an Agentic AI agency that helps mid-market companies implement sophisticated AI automation systems. The market opportunity is significant - $45.2B by 2030 with 23.4% CAGR.
+
+                    We're currently raising [Amount] to accelerate our growth and would welcome the opportunity to discuss this with you.
+
+                    Best regards,
+                    [Your Name]
+
+                    **Template 2: Follow-up Template**
+
+                    Subject: Follow-up: Agentic AI Agency Investment Opportunity
+
+                    Dear [Investor Name],
+
+                    Thank you for taking the time to discuss [Company Name]. As requested, I'm attaching our updated materials including financial projections and case studies.
+
+                    Our key differentiators include our focus on agentic AI systems and our proven track record of 90%+ client retention.
+
+                    Please let me know if you need any additional information.
+
+                    Best regards,
+                    [Your Name]
+
+                    **Template 3: Partnership Outreach**
+
+                    Subject: Strategic Partnership Opportunity - AI Implementation Services
+
+                    Dear [Partner Name],
+
+                    I'm [Your Name] from [Company Name], and I believe there's a strong partnership opportunity between our companies.
+
+                    We specialize in enterprise AI implementations and could help accelerate your customers' adoption of your platform.
+
+                    Would you be available for a brief call to discuss potential collaboration?
+
+                    Best regards,
+                    [Your Name]
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+
+    <!-- Inline Script for Immediate Initialization -->
+    <script>
+        // Immediate initialization check
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Cereb-Meta Analyzer - Bulletproof API Edition');
+            console.log('📡 Initializing comprehensive API connection testing...');
+            
+            // Show initial status
+            const statusElement = document.getElementById('statusText');
+            if (statusElement) {
+                statusElement.textContent = 'Initializing bulletproof connections...';
+            }
+            
+            // Update status pills
+            setTimeout(() => {
+                updateStatusPills();
+            }, 1000);
+        });
+        
+        function updateStatusPills() {
+            const successPill = document.getElementById('connectionStatusPill');
+            const fallbackPill = document.getElementById('fallbackStatusPill');
+            const offlinePill = document.getElementById('offlineStatusPill');
+            
+            // Hide all pills initially
+            [successPill, fallbackPill, offlinePill].forEach(pill => {
+                if (pill) pill.style.display = 'none';
+            });
+            
+            // Show appropriate pill based on connection status
+            setTimeout(() => {
+                if (typeof appApiStatus !== 'undefined') {
+                    if (appApiStatus.isOnline && appApiStatus.activeProvider === 'cerebras') {
+                        if (successPill) successPill.style.display = 'inline-flex';
+                    } else if (appApiStatus.isOnline) {
+                        if (fallbackPill) fallbackPill.style.display = 'inline-flex';
+                    } else {
+                        if (offlinePill) offlinePill.style.display = 'inline-flex';
+                    }
+                }
+            }, 3000);
+        }
+        
+        // Update API status badges in the popup
+        function updateApiStatusBadges() {
+            if (typeof appApiStatus === 'undefined') return;
+            
+            const cerebrasStatus = document.getElementById('cerebrasStatus');
+            const fallbackStatus = document.getElementById('fallbackStatus');
+            const visualStatus = document.getElementById('visualStatus');
+            
+            if (cerebrasStatus) {
+                cerebrasStatus.className = `api-status-badge ${appApiStatus.cerebras.online ? 'online' : 'offline'}`;
+                cerebrasStatus.textContent = appApiStatus.cerebras.online ? 'Online' : 'Offline';
+            }
+            
+            if (fallbackStatus) {
+                fallbackStatus.className = `api-status-badge ${appApiStatus.fallback_openrouter.online ? 'online' : 'offline'}`;
+                fallbackStatus.textContent = appApiStatus.fallback_openrouter.online ? 'Online' : 'Offline';
+            }
+            
+            if (visualStatus) {
+                visualStatus.className = `api-status-badge ${appApiStatus.visual_openrouter.online ? 'online' : 'offline'}`;
+                visualStatus.textContent = appApiStatus.visual_openrouter.online ? 'Online' : 'Offline';
+            }
+        }
+        
+        // Periodic status updates
+        setInterval(() => {
+            updateApiStatusBadges();
+            updateStatusPills();
+        }, 5000);
+        
+        console.log('✅ Cereb-Meta Analyzer fully loaded with bulletproof API connections');
+    </script>
+</body>
+</html>
